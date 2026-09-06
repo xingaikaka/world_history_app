@@ -214,6 +214,43 @@ class _PeriodCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 10),
+                    if (period.keyFigures.isNotEmpty) ...[
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: period.keyFigures.take(4).map((figure) {
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: period.accentColor.withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: period.accentColor.withValues(alpha: 0.2),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                CircleAvatar(
+                                  radius: 8,
+                                  backgroundColor: period.accentColor.withValues(alpha: 0.15),
+                                  child: Text(
+                                    figure.name.characters.first,
+                                    style: AppTheme.label(size: 8, color: period.accentColor),
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  figure.name,
+                                  style: AppTheme.label(size: 10, color: period.accentColor),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 10),
+                    ],
                     Row(
                       children: [
                         Icon(Icons.touch_app_rounded,

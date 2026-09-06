@@ -5,11 +5,14 @@ class HistoryEvent {
   final String year;
   final String title;
   final String description;
+  /// 与该事件直接相关的人物；为空时可从阶段 keyFigures 自动关联
+  final List<KeyFigure> relatedFigures;
 
   const HistoryEvent({
     required this.year,
     required this.title,
     required this.description,
+    this.relatedFigures = const [],
   });
 }
 

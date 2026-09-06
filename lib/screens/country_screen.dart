@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/country.dart';
+import '../services/reading_progress_service.dart';
+import '../services/related_countries_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/country_badge.dart';
 import '../widgets/timeline_widget.dart';
@@ -121,6 +123,43 @@ class CountryScreen extends StatelessWidget {
                       ),
                     ],
                   ),
+                  ListenableBuilder(
+                    listenable: ReadingProgressService.instance,
+                    builder: (context, _) {
+                      final visited =
+                          ReadingProgressService.instance.visitedCountForCountry(country.id);
+                      if (visited == 0) return const SizedBox.shrink();
+                      final ratio = visited / country.periods.length;
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text('阅读进度',
+                                    style: AppTheme.label(size: 11)),
+                                const Spacer(),
+                                Text('已读 $visited / ${country.periods.length} 个阶段',
+                                    style: AppTheme.label(
+                                        size: 11, color: AppTheme.primary)),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: LinearProgressIndicator(
+                                value: ratio,
+                                minHeight: 6,
+                                backgroundColor: AppTheme.divider,
+                                color: country.themeColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                   const SizedBox(height: 24),
                   Row(
                     children: [
@@ -155,6 +194,93 @@ class CountryScreen extends StatelessWidget {
                   ),
                 ),
               ),
+            ),
+          ),
+          SliverToBoxAdapter(child: _RelatedCountriesSection(country: country)),
+        ],
+      ),
+    );
+  }
+}
+
+class _RelatedCountriesSection extends StatelessWidget {
+  final Country country;
+
+  const _RelatedCountriesSection({required this.country});
+
+  @override
+  Widget build(BuildContext context) {
+    final related = RelatedCountriesService.relatedTo(country);
+    if (related.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.hub_rounded, size: 18, color: country.themeColor),
+              const SizedBox(width: 8),
+              Text('相关国家', style: AppTheme.title(size: 16)),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text('同地区或相似历史主题',
+              style: AppTheme.body(size: 12, color: AppTheme.textSecondary)),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 110,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: related.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 10),
+              itemBuilder: (context, index) {
+                final item = related[index];
+                return Material(
+                  color: AppTheme.card,
+                  borderRadius: BorderRadius.circular(12),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => CountryScreen(country: item),
+                      ),
+                    ),
+                    child: Container(
+                      width: 140,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppTheme.divider),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              CountryBadge(flagCode: item.flagCode),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(item.name,
+                                    style: AppTheme.title(size: 13),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis),
+                              ),
+                            ],
+                          ),
+                          const Spacer(),
+                          Text(item.region,
+                              style: AppTheme.label(size: 10, color: item.themeColor)),
+                          Text('${item.periods.length} 个阶段',
+                              style: AppTheme.body(size: 10)),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         ],
